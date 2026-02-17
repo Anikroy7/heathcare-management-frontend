@@ -4,6 +4,9 @@ import { patientApi } from './api/patientApi'
 import { doctorApi } from './api/doctorApi'
 import authReducer from './slices/authSlices';
 import { authApi } from './api/authApi';
+import { scheduleApi } from './api/scheduleApi';
+import { appointmentApi } from './api/appointmentApi';
+import { doctorScheduleApi } from './api/doctorScheduleApi';
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +14,9 @@ export const store = configureStore({
     [patientApi.reducerPath]: patientApi.reducer,
     [doctorApi.reducerPath]: doctorApi.reducer,
     [authApi.reducerPath]: authApi.reducer,
+    [scheduleApi.reducerPath]: scheduleApi.reducer,
+    [appointmentApi.reducerPath]: appointmentApi.reducer,
+    [doctorScheduleApi.reducerPath]: doctorScheduleApi.reducer,
 
     auth: authReducer,
 
@@ -18,7 +24,14 @@ export const store = configureStore({
   // Adding the api middleware enables caching, invalidation, polling,
   // and other useful features of `rtk-query`.
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(patientApi.middleware, doctorApi.middleware, authApi.middleware),
+    getDefaultMiddleware().concat(
+      patientApi.middleware, 
+      doctorApi.middleware, 
+      authApi.middleware, 
+      scheduleApi.middleware, 
+      appointmentApi.middleware,
+      doctorScheduleApi.middleware
+    ),
 })
 
 
