@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { authApi } from '../services/api';
+import { useCreatePatientMutation } from '../store/api/patientApi';
 
 interface RegisterPatientFormProps {
   onSuccess: () => void;
@@ -15,20 +15,18 @@ export default function RegisterPatientForm({ onSuccess }: RegisterPatientFormPr
     gender: 'male' as 'male' | 'female' | 'other',
   });
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  
+  const [createPatient, { isLoading }] = useCreatePatientMutation();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
     try {
-      await authApi.registerPatient(formData);
+      await createPatient(formData).unwrap();
       onSuccess();
     } catch (err: any) {
-      setError(err.message || 'Registration failed');
-    } finally {
-      setLoading(false);
+      setError(err?.data?.message || 'Failed to create account. Please try again.');
     }
   };
 
@@ -140,10 +138,10 @@ export default function RegisterPatientForm({ onSuccess }: RegisterPatientFormPr
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={isLoading}
         className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {loading ? 'Creating Account...' : 'Register as Patient'}
+        {isLoading ? 'Creating Account...' : 'Register as Patient'}
       </button>
     </form>
   );

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { authApi } from '../services/api';
+import { useCreateDoctorMutation } from '../store/api/doctorApi';
 
 interface RegisterDoctorFormProps {
   onSuccess: () => void;
@@ -16,20 +16,18 @@ export default function RegisterDoctorForm({ onSuccess }: RegisterDoctorFormProp
     specialization: '',
   });
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  
+  const [createDoctor, { isLoading }] = useCreateDoctorMutation();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
     try {
-      await authApi.registerDoctor(formData);
+      await createDoctor(formData).unwrap();
       onSuccess();
     } catch (err: any) {
-      setError(err.message || 'Registration failed');
-    } finally {
-      setLoading(false);
+      setError(err?.data?.message || 'Failed to create account. Please try again.');
     }
   };
 
@@ -53,6 +51,8 @@ export default function RegisterDoctorForm({ onSuccess }: RegisterDoctorFormProp
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+
+
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -151,10 +151,10 @@ export default function RegisterDoctorForm({ onSuccess }: RegisterDoctorFormProp
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={isLoading}
         className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {loading ? 'Creating Account...' : 'Register as Doctor'}
+        {isLoading ? 'Creating Account...' : 'Register as Doctor'}
       </button>
     </form>
   );

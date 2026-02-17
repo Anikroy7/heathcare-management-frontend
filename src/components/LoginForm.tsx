@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { authApi } from '../services/api';
+import { useLoginMutation } from '../store/api/authApi';
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '../store/slices/authSlices';
 
 interface LoginFormProps {
   onSuccess: (token: string) => void;
@@ -9,21 +11,34 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  
+  const [login, { isLoading }] = useLoginMutation();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
     try {
-      const response = await authApi.login({ email, password });
-      localStorage.setItem('token', response.access_token);
-      onSuccess(response.access_token);
-    } catch (err) {
-      setError('Invalid email or password');
-    } finally {
-      setLoading(false);
+      const result = await login({ email, password }).unwrap();
+      
+      if (result.accessToken && result.user) {
+        dispatch(setCredentials({ 
+          user: result.user, 
+          token: result.accessToken 
+        }));
+        onSuccess(result.accessToken);
+      } else {
+        setError('Login failed');
+      }
+    } catch (err: any) {
+      // Handle different error response structures
+      const errorMessage = 
+        err?.data?.message || 
+        err?.message || 
+        err?.error || 
+        'An error occurred during login';
+      setError(errorMessage);
     }
   };
 
@@ -65,10 +80,10 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={isLoading}
         className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
       >
-        {loading ? 'Signing in...' : 'Sign In'}
+        {isLoading ? 'Signing in...' : 'Sign In'}
       </button>
     </form>
   );
