@@ -29,7 +29,7 @@ export default function AuthPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent mb-1">
-            Healthcare Portal
+            Healthcare 
           </h1>
           <p className="text-gray-600 text-sm font-medium">
             {mode === 'login' && 'Sign in to your account'}

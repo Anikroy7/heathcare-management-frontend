@@ -3,42 +3,63 @@ import type { RootState } from '../store';
 
 export interface Appointment {
   _id: string;
-  patient: {
-    _id: string;
-    user: string;
-    date_of_birth: string;
-    gender: string;
-  };
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | string;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+
   doctor: {
+    _id: string;
+    address: string;
+    license_number: string;
+    specialization: string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+    user: {
+      name: string
+    };
+  };
+
+  patient: {
     _id: string;
     user: {
       _id: string;
       name: string;
       email: string;
-      phone: string;
     };
-    specialization: string;
-    license_number: string;
-    address: string;
+    phone: string;
+    gender: 'male' | 'female' | 'other' | string;
+    date_of_birth: string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
   };
+
   schedule: {
     _id: string;
+    doctor: string;
+    date: string;
+    startTime: string;
+    totalSlot: number;
+    slot_duration_minutes: number;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  };
+
+  scheduleSlot: {
+    _id: string;
+    schedule: string;
     startTime: string;
     endTime: string;
     duration_minutes: number;
-    status: string;
-    schedule: {
-      _id: string;
-      date: string;
-      startTime: string;
-      totalSlot: number;
-      slot_duration_minutes: number;
-      isActive: boolean;
-    };
-  } | null;
-  status: 'pending' | 'visited' | 'canceled';
-  createdAt: string;
-  updatedAt: string;
+    status: 'available' | 'booked' | 'cancelled' | string;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+  };
 }
 
 export interface CreateAppointmentDto {
@@ -75,7 +96,19 @@ export const appointmentApi = createApi({
       query: () => 'appointments/user',
       providesTags: ['Appointment'],
     }),
+    getScheduleAppointments: build.query<Appointment[], string>({
+      query: (scheduleId) => `appointments/${scheduleId}`,
+      providesTags: ['Appointment'],
+      transformResponse: (response: Appointment | Appointment[]) => {
+        // Backend returns single object, convert to array
+        return Array.isArray(response) ? response : response ? [response] : [];
+      },
+    }),
   }),
 });
 
-export const { useCreateAppointmentMutation, useGetUserAppointmentsQuery } = appointmentApi;
+export const { 
+  useCreateAppointmentMutation, 
+  useGetUserAppointmentsQuery,
+  useGetScheduleAppointmentsQuery 
+} = appointmentApi;

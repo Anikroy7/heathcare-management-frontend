@@ -16,6 +16,7 @@ export default function BookAppointmentPage() {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedSlot, setSelectedSlot] = useState<string>('');
+  const [doctorSchedule, setDoctorSchedule]=  useState<string>('');
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [createAppointment, { isLoading: isCreating }] = useCreateAppointmentMutation();
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -41,6 +42,9 @@ export default function BookAppointmentPage() {
         available: slot.status !== 'booked',
       }));
       setSlots(formattedSlots);
+      if(slotsData.length>0){
+        setDoctorSchedule(slotsData[0]?.schedule)
+      }
     } else {
       setSlots([]);
     }
@@ -75,7 +79,7 @@ export default function BookAppointmentPage() {
     try {
       await createAppointment({
         doctor: doctorId,
-        schedule: selectedSlot,
+        schedule: doctorSchedule,
         scheduleSlot: selectedSlot,
         status: 'pending',
       }).unwrap();

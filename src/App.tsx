@@ -4,6 +4,7 @@ import AuthPage from './pages/AuthPage';
 import BookAppointmentPage from './pages/BookAppointmentPage';
 import MyAppointmentsPage from './pages/MyAppointmentsPage';
 import DoctorDashboardPage from './pages/DoctorDashboardPage';
+import ScheduleAppointmentsPage from './pages/ScheduleAppointmentsPage';
 import Navbar from './components/Navbar';
 import DoctorList from './components/DoctorList';
 import type { RootState } from './store/store';
@@ -44,6 +45,7 @@ function App() {
           />
           <Route path="/book-appointment/:doctorId" element={<BookAppointmentPage />} />
           <Route path="/my-appointments" element={<MyAppointmentsPage />} />
+          <Route path="/schedule-appointments/:scheduleId" element={<ScheduleAppointmentsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
