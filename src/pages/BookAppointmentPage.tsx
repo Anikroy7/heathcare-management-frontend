@@ -16,7 +16,7 @@ export default function BookAppointmentPage() {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedSlot, setSelectedSlot] = useState<string>('');
-  const [doctorSchedule, setDoctorSchedule]=  useState<string>('');
+  const [doctorSchedule, setDoctorSchedule] = useState<string>('');
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [createAppointment, { isLoading: isCreating }] = useCreateAppointmentMutation();
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -42,7 +42,7 @@ export default function BookAppointmentPage() {
         available: slot.status !== 'booked',
       }));
       setSlots(formattedSlots);
-      if(slotsData.length>0){
+      if (slotsData.length > 0) {
         setDoctorSchedule(slotsData[0]?.schedule)
       }
     } else {
@@ -87,26 +87,29 @@ export default function BookAppointmentPage() {
       refetch();
 
       const selectedSlotData = slots.find(s => s.id === selectedSlot);
-      setToast({ 
-        message: `Appointment successfully booked for ${selectedDate} at ${selectedSlotData?.startTime}!`, 
-        type: 'success' 
+      setToast({
+        message: `Appointment successfully booked for ${selectedDate} at ${selectedSlotData?.startTime}!`,
+        type: 'success'
       });
-      
+
       navigate('/my-appointments');
     } catch (error: any) {
       console.error('Failed to create appointment:', error);
-      setToast({ 
-        message: error?.data?.message || 'Failed to book appointment. Please try again.', 
-        type: 'error' 
+      setToast({
+        message: error?.data?.message || 'Failed to book appointment. Please try again.',
+        type: 'error'
       });
     }
   };
 
   const today = new Date().toISOString().split('T')[0];
-  
+
   const maxDate = new Date();
   maxDate.setDate(maxDate.getDate() + 30);
   const maxDateStr = maxDate.toISOString().split('T')[0];
+
+
+ 
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -117,7 +120,7 @@ export default function BookAppointmentPage() {
           onClose={() => setToast(null)}
         />
       )}
-      
+
       <div className="max-w-7xl mx-auto px-4">
         <div className="mb-6">
           <button
@@ -139,7 +142,7 @@ export default function BookAppointmentPage() {
             </svg>
             Back to Doctors
           </button>
-          
+
           <h1 className="text-base font-bold text-gray-900">Book Appointment</h1>
           <p className="text-gray-600 mt-2">Select a date and time slot for your appointment</p>
         </div>
@@ -167,7 +170,7 @@ export default function BookAppointmentPage() {
                   <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
                     Booking Summary
                   </h3>
-                  
+
                   <div className="space-y-4 mb-6">
                     <div className="flex items-start">
                       <svg
@@ -285,7 +288,7 @@ export default function BookAppointmentPage() {
                 </svg>
                 Select Date
               </h3>
-              
+
               <input
                 type="date"
                 value={selectedDate}
@@ -294,7 +297,7 @@ export default function BookAppointmentPage() {
                 max={maxDateStr}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 text-lg"
               />
-              
+
               {selectedDate && (
                 <div className="mt-4 bg-primary-50 rounded-lg p-3 flex items-center">
                   <svg
@@ -341,7 +344,7 @@ export default function BookAppointmentPage() {
                   </svg>
                   Available Time Slots
                 </h3>
-                
+
                 {isLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
@@ -375,21 +378,20 @@ export default function BookAppointmentPage() {
                           disabled={!slot.available}
                           className={`
                             py-2 px-3 rounded-lg font-medium text-sm transition-all
-                            ${
-                              slot.available
-                                ? selectedSlot === slot.id
-                                  ? 'bg-primary-600 text-white shadow-md transform scale-105'
-                                  : 'bg-primary-50 text-primary-700 hover:bg-primary-100 border border-primary-200'
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
+                            ${slot.available
+                              ? selectedSlot === slot.id
+                                ? 'bg-primary-600 text-white shadow-md transform scale-105'
+                                : 'bg-primary-50 text-primary-700 hover:bg-primary-100 border border-primary-200'
+                              : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
                             }
                           `}
                         >
                           {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-                         
+
                         </button>
                       ))}
                     </div>
-                    
+
                     <div className="mt-4 flex items-start text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
                       <svg
                         className="w-5 h-5 mr-2 text-primary-500 shrink-0"
@@ -427,7 +429,7 @@ export default function BookAppointmentPage() {
                 )}
               </div>
             )}
-            
+
             {!selectedDate && (
               <div className="bg-white rounded-lg shadow-md p-12 border border-gray-200 text-center">
                 <svg

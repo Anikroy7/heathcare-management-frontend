@@ -1,9 +1,19 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetUserAppointmentsQuery } from '../store/api/appointmentApi';
+import { useGetPrescriptionByAppointmentQuery } from '../store/api/prescriptionApi';
 
 export default function MyAppointmentsPage() {
   const navigate = useNavigate();
   const { data: appointments, isLoading, error } = useGetUserAppointmentsQuery();
+  
+  const [showViewPrescriptionModal, setShowViewPrescriptionModal] = useState(false);
+  const [viewingAppointmentId, setViewingAppointmentId] = useState<string | null>(null);
+
+  const { data: viewingPrescription, isLoading: isLoadingPrescription } = useGetPrescriptionByAppointmentQuery(
+    viewingAppointmentId || '',
+    { skip: !viewingAppointmentId }
+  );
 
   // Helper function to convert 24-hour time to 12-hour format with AM/PM
   const formatTime = (time: string) => {
@@ -51,8 +61,163 @@ export default function MyAppointmentsPage() {
     }
   };
 
+  const handleViewPrescription = (appointmentId: string) => {
+    setViewingAppointmentId(appointmentId);
+    setShowViewPrescriptionModal(true);
+  };
+
+  const handleCloseViewPrescription = () => {
+    setShowViewPrescriptionModal(false);
+    setViewingAppointmentId(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      {/* View Prescription Modal */}
+      {showViewPrescriptionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <h2 className="text-2xl font-bold">Your Prescription</h2>
+                </div>
+                <button
+                  onClick={handleCloseViewPrescription}
+                  className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-2 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+              {isLoadingPrescription ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  <span className="ml-4 text-gray-600">Loading prescription...</span>
+                </div>
+              ) : !viewingPrescription ? (
+                <div className="text-center py-12">
+                  <svg className="w-20 h-20 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Prescription Found</h3>
+                  <p className="text-gray-600">No prescription has been created for this appointment yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Prescription Info */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start">
+                      <svg className="w-6 h-6 text-blue-600 mr-3 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-blue-900 mb-1">Prescription ID</h3>
+                        <p className="text-sm text-blue-700 font-mono">{viewingPrescription._id}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Prescription Details */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Prescription Details
+                    </label>
+                    <div className="bg-gray-50 border border-gray-300 rounded-lg p-4">
+                      <p className="text-gray-900 whitespace-pre-wrap">{viewingPrescription.description}</p>
+                    </div>
+                  </div>
+
+                  {/* Follow-up Date */}
+                  {viewingPrescription.followUpDate && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Follow-up Date
+                      </label>
+                      <div className="flex items-center bg-green-50 border border-green-200 rounded-lg p-4">
+                        <svg className="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-green-900 font-medium">
+                          {new Date(viewingPrescription.followUpDate).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Important Note */}
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-start">
+                      <svg className="w-5 h-5 text-yellow-600 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div className="text-sm text-yellow-800">
+                        <p className="font-medium mb-1">Important</p>
+                        <p>Please follow the prescription as directed by your doctor. If you have any questions or concerns, contact your healthcare provider.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Metadata */}
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-500">Prescribed on:</span>
+                        <span className="ml-2 font-medium text-gray-900">
+                          {new Date(viewingPrescription.createdAt).toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Last updated:</span>
+                        <span className="ml-2 font-medium text-gray-900">
+                          {new Date(viewingPrescription.updatedAt).toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={handleCloseViewPrescription}
+                className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
@@ -121,13 +286,6 @@ export default function MyAppointmentsPage() {
                 return null;
               }
 
-              // Get doctor name initials
-              const doctorName = appointment.doctor.user?.name || 'Unknown';
-              const nameParts = doctorName.split(' ');
-              const initials = nameParts.length >= 2 
-                ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`
-                : doctorName.substring(0, 2).toUpperCase();
-
               return (
                 <div
                   key={appointment._id}
@@ -137,12 +295,14 @@ export default function MyAppointmentsPage() {
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                       {/* Doctor Info */}
                       <div className="flex items-start space-x-4 flex-1">
-                        <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 font-bold text-xl shrink-0">
-                          {initials}
+                        <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 shrink-0">
+                          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                            Dr. {doctorName}
+                            Doctor
                           </h3>
                           <p className="text-primary-600 font-medium mb-3">{appointment.doctor.specialization}</p>
                           
@@ -169,6 +329,23 @@ export default function MyAppointmentsPage() {
                                 {formatTime(appointment.scheduleSlot.startTime)} - {formatTime(appointment.scheduleSlot.endTime)}
                               </span>
                             </div>
+                            <div className="flex items-center text-gray-600">
+                              <svg className="w-5 h-5 mr-2 text-primary-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                              <span className="text-sm">
+                                {appointment.doctor.address}
+                              </span>
+                            </div>
+                            <div className="flex items-center text-gray-600">
+                              <svg className="w-5 h-5 mr-2 text-primary-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <span className="text-sm">
+                                {appointment.doctor.license_number}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -184,15 +361,28 @@ export default function MyAppointmentsPage() {
 
                     {/* Booking Info */}
                     <div className="mt-4 pt-4 border-t border-gray-200">
-                      <p className="text-xs text-gray-500">
-                        Booked on {new Date(appointment.createdAt).toLocaleDateString('en-US', {
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-500">
+                          Booked on {new Date(appointment.createdAt).toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </p>
+                        {appointment.status === 'visited' && (
+                          <button
+                            onClick={() => handleViewPrescription(appointment._id)}
+                            className="flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
+                          >
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            View Prescription
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

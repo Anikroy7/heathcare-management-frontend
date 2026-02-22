@@ -16,9 +16,7 @@ export interface Appointment {
     createdAt: string;
     updatedAt: string;
     __v: number;
-    user: {
-      name: string
-    };
+    user: string;
   };
 
   patient: {

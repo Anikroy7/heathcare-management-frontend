@@ -7,6 +7,7 @@ import { authApi } from './api/authApi';
 import { scheduleApi } from './api/scheduleApi';
 import { appointmentApi } from './api/appointmentApi';
 import { doctorScheduleApi } from './api/doctorScheduleApi';
+import { prescriptionApi } from './api/prescriptionApi';
 
 export const store = configureStore({
   reducer: {
@@ -17,6 +18,7 @@ export const store = configureStore({
     [scheduleApi.reducerPath]: scheduleApi.reducer,
     [appointmentApi.reducerPath]: appointmentApi.reducer,
     [doctorScheduleApi.reducerPath]: doctorScheduleApi.reducer,
+    [prescriptionApi.reducerPath]: prescriptionApi.reducer,
 
     auth: authReducer,
 
@@ -30,7 +32,8 @@ export const store = configureStore({
       authApi.middleware, 
       scheduleApi.middleware, 
       appointmentApi.middleware,
-      doctorScheduleApi.middleware
+      doctorScheduleApi.middleware,
+      prescriptionApi.middleware
     ),
 })
 
